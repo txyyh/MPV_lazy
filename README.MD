@@ -5,19 +5,21 @@
 ![](Temp/index-界面对比.jpg)
 ![](Temp/index-高级播放列表.png)
 
-[mpv 命令行播放器](https://github.com/mpv-player/mpv)  
+[**mpv 命令行播放器**](https://github.com/mpv-player/mpv)  
 
 我的个人设置备份（在windows10/11平台具有较好的普适性）  
-各文件夹内的md也有进一步的说明  
+各文件夹内的 `.md` 文件也有进一步的说明  
 建议直接下载本仓库内的原档文件进行修改，自行新建文本编辑注意编码格式应为 **UTF-8** ，换行符为 **LF** ，否则MPV可能无法识别  
 
-从零开始接触mpv且不使用懒人包的话可参考 [win10/11 mpv播放器通用教程](https://hooke007.github.io/mpv-lazy/mpv.html)
+从零开始接触mpv且不使用懒人包的话可参考
+- [win10/11 mpv播放器通用教程](https://hooke007.github.io/mpv-lazy/mpv.html)  
+- [mpv官方文档的汉化](https://github.com/hooke007/mpv_doc-CN)
 
 ## 懒人包
 
 懒人包是解压即可使用的完整解决方案 [快速说明](https://hooke007.github.io/mpv-lazy/[00]_懒人包快速说明.html)  
 说明文档 [我的主页#系列手册](https://hooke007.github.io/#系列手册)  
-下载见 [**Releases**](https://github.com/hooke007/MPV_lazy/releases)
+下载见 [**Releases**](../../releases)
 
 ## 简易包
 
