@@ -1,6 +1,6 @@
 --[[
 SOURCE_ https://github.com/deus0ww/mpv-conf/blob/master/scripts/Thumbnailer.lua
-COMMIT_ 20211005 62fa158
+COMMIT_ 20220111 ec1792d
 
 搭配osc_lazy的缩略图脚本(1)/(2)
 ]]--
@@ -378,7 +378,7 @@ local function osc_set_options(is_visible)
 	return {
 		spacer        = user_opts.spacer,
 		show_progress = user_opts.show_progress,
-		scale         = state.scale,
+		scale         = state and state.scale or 1,
 		centered      = user_opts.centered,
 		visible       = osc_visible,
 	}
