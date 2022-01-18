@@ -1,4 +1,6 @@
 @echo off
+chcp 936
+
 setlocal enableextensions enabledelayedexpansion
 path %SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem
 

@@ -644,7 +644,7 @@ mp.register_event("file-loaded", function()
             {RADIO, "开", "", "set deinterlace yes", function() return stateDeInt(true) end, false, true},
             {SEP},
             {CHECK, "自动ICC校色", "", "cycle icc-profile-auto", function() return propNative("icc-profile-auto") end, false},
-            {CASCADE, "调色", "color_menu", "", "", false},
+            {CASCADE, "均衡器", "equalizer_menu", "", "", false},
             {CASCADE, "截屏", "screenshot_menu", "", "", false},
         },
 
@@ -671,8 +671,8 @@ mp.register_event("file-loaded", function()
 
         },
 
--- 三级菜单 —— 调色
-        color_menu = {
+-- 三级菜单 —— 均衡器
+        equalizer_menu = {
             {COMMAND, "重置", "", "no-osd set contrast 0; no-osd set brightness 0; no-osd set gamma 0; no-osd set saturation 0; no-osd set hue 0", "", false},
             {COMMAND, "对比 -1", "", "add contrast -1", "", false, true},
             {COMMAND, "对比 +1", "", "add contrast 1 ", "", false, true},

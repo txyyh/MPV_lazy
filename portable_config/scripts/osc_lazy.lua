@@ -83,7 +83,7 @@ local user_opts = {
 
     wctitle = "${media-title}",         -- 无边框的上方标题
     sub_title = " ",                    -- bottombox布局的右侧子标题
-    sub_title2 = "对比[${contrast}]  亮度[${brightness}]  伽马[${gamma}]  饱和[${saturation}]  色相[${hue}]",
+    sub_title2 = "对比[${contrast}]  明度[${brightness}]  伽马[${gamma}]  饱和[${saturation}]  色相[${hue}]",
                                         -- bottombox布局的临时右侧子标题
     font = "sans",                      -- OSC的全局字体显示
     font_mono = "sans",
