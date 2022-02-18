@@ -25,7 +25,7 @@
 // Adaptive sharpen - version 2021-10-17
 // Tuned for use post-resize, EXPECTS FULL RANGE GAMMA LIGHT (requires ps >= 3.0)
 
-//!HOOK SCALED
+//!HOOK OUTPUT
 //!BIND HOOKED
 //!DESC adaptive-sharpen [2.0] anime
 
