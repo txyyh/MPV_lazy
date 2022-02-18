@@ -567,7 +567,7 @@ mp.register_event("file-loaded", function()
 -- 二级菜单 —— 文件
         file_menu = {
             {CHECK, "播放/暂停", "", "cycle pause", function() return propNative("pause") end, false, true},
---            {COMMAND, "停止", "", "stop", "", false},
+            {COMMAND, "停止", "", "stop", "", false},
             {SEP},
             {COMMAND, "显示OSD时间轴", "", "no-osd cycle-values osd-level 3 1", "", false},
             {RADIO, "开", "", "set osd-level 3", function() return stateOsdLevel(3) end, false},
