@@ -18,26 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// FidelityFX FSR v1.0.2 by AMD
-// ported to mpv by agyild
+// Mod from AMD-FSR.glsl
 
-// Changelog
-// Made it compatible with pre-OpenGL 4.0 renderers
-// Made it directly operate on LUMA plane, since the original shader was operating on LUMA by deriving it from RGB. This should cause a major increase in performance, especially on OpenGL 4.0+ renderers (4+2 texture lookups vs. 12+5)
-// Removed transparency preservation mechanism since the alpha channel is a separate source plan than LUMA
-// 
-// Notes
-// Per AMD's guidelines only upscales content up to 4x (e.g., 1080p -> 2160p, 720p -> 1440p etc.) and everything else in between,
-// that means FSR will scale up to 4x at maximum, and any further scaling will be processed by mpv's scalers
-
-//!HOOK LUMA
+//!HOOK MAIN
 //!BIND HOOKED
-//!SAVE EASUTEX
-//!DESC FidelityFX Super Resolution v1.0.2 (EASU)
-//!WHEN OUTPUT.w OUTPUT.h * LUMA.w LUMA.h * / 1.0 >
-//!WIDTH OUTPUT.w OUTPUT.w LUMA.w 2 * < * LUMA.w 2 * OUTPUT.w LUMA.w 2 * > * + OUTPUT.w OUTPUT.w LUMA.w 2 * = * +
-//!HEIGHT OUTPUT.h OUTPUT.h LUMA.h 2 * < * LUMA.h 2 * OUTPUT.h LUMA.h 2 * > * + OUTPUT.h OUTPUT.h LUMA.h 2 * = * +
-//!COMPONENTS 1
+//!DESC AMD-FSR-EASU_rgb
+//!WHEN OUTPUT.w OUTPUT.h * MAIN.w MAIN.h * / 1.0 >
+//!WIDTH OUTPUT.w
+//!HEIGHT OUTPUT.h
+
+// User variables
+#define FSR_EASU_PASSTHROUGH_ALPHA 1 // If set to 1, preserves transparency in the image. Can be disabled for more performance. 0 or 1.
 
 // Shader code
 
@@ -49,24 +40,24 @@ float APrxLoRsqF1(float a) {
 	return uintBitsToFloat(uint(0x5f347d74) - (floatBitsToUint(a) >> uint(1)));
 }
 
-float AMin3F1(float x, float y, float z) {
+vec3 AMin3F3(vec3 x, vec3 y, vec3 z) {
 	return min(x, min(y, z));
 }
 
-float AMax3F1(float x, float y, float z) {
+vec3 AMax3F3(vec3 x, vec3 y, vec3 z) {
 	return max(x, max(y, z));
 }
 
  // Filtering for a given tap for the scalar.
  void FsrEasuTap(
-	inout float aC,  // Accumulated color, with negative lobe.
+	inout vec3 aC,  // Accumulated color, with negative lobe.
 	inout float aW, // Accumulated weight.
 	vec2 off,       // Pixel offset from resolve position to tap.
 	vec2 dir,       // Gradient direction.
 	vec2 len,       // Length.
 	float lob,      // Negative lobe strength.
 	float clp,      // Clipping point.
-	float c){        // Tap color.
+	vec3 c){        // Tap color.
 	// Rotate offset by direction.
 	vec2 v;
 	v.x = (off.x * ( dir.x)) + (off.y * dir.y);
@@ -162,34 +153,61 @@ vec4 hook() {
 	// Allowing dead-code removal to remove the 'z's.
 	
  #if (defined(HOOKED_gather) && (__VERSION__ >= 400 || (GL_ES && __VERSION__ >= 310)))
-	vec4 bczzL = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) * HOOKED_pt), 0);
-	vec4 ijfeL = HOOKED_gather(vec2((fp + vec2(0.0,  1.0)) * HOOKED_pt), 0);
-	vec4 klhgL = HOOKED_gather(vec2((fp + vec2(2.0,  1.0)) * HOOKED_pt), 0);
-	vec4 zzonL = HOOKED_gather(vec2((fp + vec2(1.0,  3.0)) * HOOKED_pt), 0);
+	vec4 bczzR = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) * HOOKED_pt), 0);
+	vec4 bczzG = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) * HOOKED_pt), 1);
+	vec4 bczzB = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) * HOOKED_pt), 2);
+	
+	vec4 ijfeR = HOOKED_gather(vec2((fp + vec2(0.0, 1.0)) * HOOKED_pt), 0);
+	vec4 ijfeG = HOOKED_gather(vec2((fp + vec2(0.0, 1.0)) * HOOKED_pt), 1);
+	vec4 ijfeB = HOOKED_gather(vec2((fp + vec2(0.0, 1.0)) * HOOKED_pt), 2);
+	
+	vec4 klhgR = HOOKED_gather(vec2((fp + vec2(2.0, 1.0)) * HOOKED_pt), 0);
+	vec4 klhgG = HOOKED_gather(vec2((fp + vec2(2.0, 1.0)) * HOOKED_pt), 1);
+	vec4 klhgB = HOOKED_gather(vec2((fp + vec2(2.0, 1.0)) * HOOKED_pt), 2);
+	
+	vec4 zzonR = HOOKED_gather(vec2((fp + vec2(1.0, 3.0)) * HOOKED_pt), 0);
+	vec4 zzonG = HOOKED_gather(vec2((fp + vec2(1.0, 3.0)) * HOOKED_pt), 1);
+	vec4 zzonB = HOOKED_gather(vec2((fp + vec2(1.0, 3.0)) * HOOKED_pt), 2);
 #else
 	// pre-OpenGL 4.0 compatibility
-	float b = HOOKED_tex(vec2((fp + vec2(0.5, -0.5)) * HOOKED_pt)).r;
-	float c = HOOKED_tex(vec2((fp + vec2(1.5, -0.5)) * HOOKED_pt)).r;
+	vec3 b = HOOKED_tex(vec2((fp + vec2(0.5, -0.5)) * HOOKED_pt)).rgb;
+	vec3 c = HOOKED_tex(vec2((fp + vec2(1.5, -0.5)) * HOOKED_pt)).rgb;
 	
-	float e = HOOKED_tex(vec2((fp + vec2(-0.5, 0.5)) * HOOKED_pt)).r;
-	float f = HOOKED_tex(vec2((fp + vec2( 0.5, 0.5)) * HOOKED_pt)).r;
-	float g = HOOKED_tex(vec2((fp + vec2( 1.5, 0.5)) * HOOKED_pt)).r;
-	float h = HOOKED_tex(vec2((fp + vec2( 2.5, 0.5)) * HOOKED_pt)).r;
+	vec3 e = HOOKED_tex(vec2((fp + vec2(-0.5, 0.5)) * HOOKED_pt)).rgb;
+	vec3 f = HOOKED_tex(vec2((fp + vec2( 0.5, 0.5)) * HOOKED_pt)).rgb;
+	vec3 g = HOOKED_tex(vec2((fp + vec2( 1.5, 0.5)) * HOOKED_pt)).rgb;
+	vec3 h = HOOKED_tex(vec2((fp + vec2( 2.5, 0.5)) * HOOKED_pt)).rgb;
 	
-	float i = HOOKED_tex(vec2((fp + vec2(-0.5, 1.5)) * HOOKED_pt)).r;
-	float j = HOOKED_tex(vec2((fp + vec2( 0.5, 1.5)) * HOOKED_pt)).r;
-	float k = HOOKED_tex(vec2((fp + vec2( 1.5, 1.5)) * HOOKED_pt)).r;
-	float l = HOOKED_tex(vec2((fp + vec2( 2.5, 1.5)) * HOOKED_pt)).r;
+	vec3 i = HOOKED_tex(vec2((fp + vec2(-0.5, 1.5)) * HOOKED_pt)).rgb;
+	vec3 j = HOOKED_tex(vec2((fp + vec2( 0.5, 1.5)) * HOOKED_pt)).rgb;
+	vec3 k = HOOKED_tex(vec2((fp + vec2( 1.5, 1.5)) * HOOKED_pt)).rgb;
+	vec3 l = HOOKED_tex(vec2((fp + vec2( 2.5, 1.5)) * HOOKED_pt)).rgb;
 	
-	float n = HOOKED_tex(vec2((fp + vec2(0.5, 2.5) ) * HOOKED_pt)).r;
-	float o = HOOKED_tex(vec2((fp + vec2(1.5, 2.5) ) * HOOKED_pt)).r;
+	vec3 n = HOOKED_tex(vec2((fp + vec2(0.5, 2.5) ) * HOOKED_pt)).rgb;
+	vec3 o = HOOKED_tex(vec2((fp + vec2(1.5, 2.5) ) * HOOKED_pt)).rgb;
 
-	vec4 bczzL = vec4(b, c, 0.0, 0.0);
-	vec4 ijfeL = vec4(i, j, f, e);
-	vec4 klhgL = vec4(k, l, h, g);
-	vec4 zzonL = vec4(0.0, 0.0, o, n);
+	vec4 bczzR = vec4(b.r, c.r, 0.0, 0.0);
+	vec4 bczzG = vec4(b.g, c.g, 0.0, 0.0);
+	vec4 bczzB = vec4(b.b, c.b, 0.0, 0.0);
+	
+	vec4 ijfeR = vec4(i.r, j.r, f.r, e.r);
+	vec4 ijfeG = vec4(i.g, j.g, f.g, e.g);
+	vec4 ijfeB = vec4(i.b, j.b, f.b, e.b);
+	
+	vec4 klhgR = vec4(k.r, l.r, h.r, g.r);
+	vec4 klhgG = vec4(k.g, l.g, h.g, g.g);
+	vec4 klhgB = vec4(k.b, l.b, h.b, g.b);
+	
+	vec4 zzonR = vec4(0.0, 0.0, o.r, n.r);
+	vec4 zzonG = vec4(0.0, 0.0, o.g, n.g);
+	vec4 zzonB = vec4(0.0, 0.0, o.b, n.b);
 #endif
 	//------------------------------------------------------------------------------------------------------------------------------
+	// Simplest multi-channel approximate luma possible (luma times 2, in 2 FMA/MAD).
+	vec4 bczzL = bczzB * vec4(0.5) + (bczzR * vec4(0.5) + bczzG);
+	vec4 ijfeL = ijfeB * vec4(0.5) + (ijfeR * vec4(0.5) + ijfeG);
+	vec4 klhgL = klhgB * vec4(0.5) + (klhgR * vec4(0.5) + klhgG);
+	vec4 zzonL = zzonB * vec4(0.5) + (zzonR * vec4(0.5) + zzonG);
 	// Rename.
 	float bL = bczzL.x;
 	float cL = bczzL.y;
@@ -239,108 +257,34 @@ vec4 hook() {
 	//  e f g h
 	//  i j k l
 	//    n o
-	float min1 = min(AMin3F1(fL, gL, jL), kL);
-	float max1 = max(AMax3F1(fL, gL, jL), kL);
+	vec3 min4 = min(AMin3F3(vec3(ijfeR.z, ijfeG.z, ijfeB.z), vec3(klhgR.w, klhgG.w, klhgB.w), vec3(ijfeR.y, ijfeG.y, ijfeB.y)), vec3(klhgR.x, klhgG.x, klhgB.x));
+	vec3 max4 = max(AMax3F3(vec3(ijfeR.z, ijfeG.z, ijfeB.z), vec3(klhgR.w, klhgG.w, klhgB.w), vec3(ijfeR.y, ijfeG.y, ijfeB.y)), vec3(klhgR.x, klhgG.x, klhgB.x));
 
 	// Accumulation.
-	float aC = 0.0;
+	vec3 aC = vec3(0.0);
 	float aW = float(0.0);
-	FsrEasuTap(aC, aW, vec2( 0.0,-1.0) - pp, dir, len2, lob, clp, bL); // b
-	FsrEasuTap(aC, aW, vec2( 1.0,-1.0) - pp, dir, len2, lob, clp, cL); // c
-	FsrEasuTap(aC, aW, vec2(-1.0, 1.0) - pp, dir, len2, lob, clp, iL); // i
-	FsrEasuTap(aC, aW, vec2( 0.0, 1.0) - pp, dir, len2, lob, clp, jL); // j
-	FsrEasuTap(aC, aW, vec2( 0.0, 0.0) - pp, dir, len2, lob, clp, fL); // f
-	FsrEasuTap(aC, aW, vec2(-1.0, 0.0) - pp, dir, len2, lob, clp, eL); // e
-	FsrEasuTap(aC, aW, vec2( 1.0, 1.0) - pp, dir, len2, lob, clp, kL); // k
-	FsrEasuTap(aC, aW, vec2( 2.0, 1.0) - pp, dir, len2, lob, clp, lL); // l
-	FsrEasuTap(aC, aW, vec2( 2.0, 0.0) - pp, dir, len2, lob, clp, hL); // h
-	FsrEasuTap(aC, aW, vec2( 1.0, 0.0) - pp, dir, len2, lob, clp, gL); // g
-	FsrEasuTap(aC, aW, vec2( 1.0, 2.0) - pp, dir, len2, lob, clp, oL); // o
-	FsrEasuTap(aC, aW, vec2( 0.0, 2.0) - pp, dir, len2, lob, clp, nL); // n
+	FsrEasuTap(aC, aW, vec2( 0.0,-1.0) - pp,dir, len2, lob, clp, vec3(bczzR.x, bczzG.x, bczzB.x)); // b
+	FsrEasuTap(aC, aW, vec2( 1.0,-1.0) - pp,dir, len2, lob, clp, vec3(bczzR.y, bczzG.y, bczzB.y)); // c
+	FsrEasuTap(aC, aW, vec2(-1.0, 1.0) - pp,dir, len2, lob, clp, vec3(ijfeR.x, ijfeG.x, ijfeB.x)); // i
+	FsrEasuTap(aC, aW, vec2( 0.0, 1.0) - pp,dir, len2, lob, clp, vec3(ijfeR.y, ijfeG.y, ijfeB.y)); // j
+	FsrEasuTap(aC, aW, vec2( 0.0, 0.0) - pp,dir, len2, lob, clp, vec3(ijfeR.z, ijfeG.z, ijfeB.z)); // f
+	FsrEasuTap(aC, aW, vec2(-1.0, 0.0) - pp,dir, len2, lob, clp, vec3(ijfeR.w, ijfeG.w, ijfeB.w)); // e
+	FsrEasuTap(aC, aW, vec2( 1.0, 1.0) - pp,dir, len2, lob, clp, vec3(klhgR.x, klhgG.x, klhgB.x)); // k
+	FsrEasuTap(aC, aW, vec2( 2.0, 1.0) - pp,dir, len2, lob, clp, vec3(klhgR.y, klhgG.y, klhgB.y)); // l
+	FsrEasuTap(aC, aW, vec2( 2.0, 0.0) - pp,dir, len2, lob, clp, vec3(klhgR.z, klhgG.z, klhgB.z)); // h
+	FsrEasuTap(aC, aW, vec2( 1.0, 0.0) - pp,dir, len2, lob, clp, vec3(klhgR.w, klhgG.w, klhgB.w)); // g
+	FsrEasuTap(aC, aW, vec2( 1.0, 2.0) - pp,dir, len2, lob, clp, vec3(zzonR.z, zzonG.z, zzonB.z)); // o
+	FsrEasuTap(aC, aW, vec2( 0.0, 2.0) - pp,dir, len2, lob, clp, vec3(zzonR.w, zzonG.w, zzonB.w)); // n
 	//------------------------------------------------------------------------------------------------------------------------------
 	// Normalize and dering.
-	vec4 pix = vec4(0.0, 0.0, 0.0, 1.0);
-	pix.r = min(max1, max(min1, aC * float(1.0 / aW)));
+	vec4 pix;
+	pix.rgb = min(max4, max(min4, aC * vec3(1.0 / aW)));
 
+	#if (FSR_EASU_PASSTHROUGH_ALPHA == 1)
+		pix.a = HOOKED_tex(HOOKED_pos).a;
+	#else
+		pix.a = float(1.0);
+	#endif
 	return pix;
 }
 
-//!HOOK LUMA
-//!BIND EASUTEX
-//!DESC FidelityFX Super Resolution v1.0.2 (RCAS)
-//!WIDTH EASUTEX.w
-//!HEIGHT EASUTEX.h
-//!COMPONENTS 1
-
-// User variables - RCAS
-#define SHARPNESS 0.25 // Controls the amount of sharpening. The scale is {0.0 := maximum, to N>0, where N is the number of stops (halving) of the reduction of sharpness}. 0.0 to N>0.
-#define FSR_RCAS_DENOISE 1 // If set to 1, applies denoising in addition to sharpening. Can be disabled for better performance. 0 or 1.
-
-// Shader code
-
-#define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0)) // This is set at the limit of providing unnatural results for sharpening.
-
-float APrxMedRcpF1(float a) {
-	float b = uintBitsToFloat(uint(0x7ef19fff) - floatBitsToUint(a));
-	return b * (-b * a + float(2.0));
-}
-
-float AMax3F1(float x, float y, float z) {
-	return max(x, max(y, z)); 
-}
-
-float AMin3F1(float x, float y, float z) {
-	return min(x, min(y, z));
-}
-
-vec4 hook() {
-	// Algorithm uses minimal 3x3 pixel neighborhood.
-	//    b 
-	//  d e f
-	//    h
-#if (defined(EASUTEX_gather) && (__VERSION__ >= 400 || (GL_ES && __VERSION__ >= 310)))
-	vec3 bde = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * vec2(-0.5), 0).xyz;
-	float b = bde.z;
-	float d = bde.x;
-	float e = bde.y;
-
-	vec2 fh = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * vec2(0.5), 0).zx;
-	float f = fh.x;
-	float h = fh.y;
-#else
-	float b = EASUTEX_texOff(vec2( 0.0, -1.0)).r;
-	float d = EASUTEX_texOff(vec2(-1.0,  0.0)).r;
-	float e = EASUTEX_tex(EASUTEX_pos).r;
-	float f = EASUTEX_texOff(vec2(1.0, 0.0)).r;
-	float h = EASUTEX_texOff(vec2(0.0, 1.0)).r;
-#endif
-
-	// Min and max of ring.
-	float mn1L = min(AMin3F1(b, d, f), h);
-	float mx1L = max(AMax3F1(b, d, f), h);
-
-	// Immediate constants for peak range.
-	vec2 peakC = vec2(1.0, -1.0 * 4.0);
-
-	// Limiters, these need to be high precision RCPs.
-	float hitMinL = min(mn1L, e) * (float(1.0) / (float(4.0) * mx1L));
-	float hitMaxL = (peakC.x - max(mx1L, e)) * (float(1.0) / (float(4.0) * mn1L + peakC.y));
-	float lobeL = max(-hitMinL, hitMaxL);
-	float lobe = max(float(-FSR_RCAS_LIMIT), min(lobeL, float(0.0))) * exp2(-max(float(SHARPNESS), float(0.0)));
-
-	// Apply noise removal.
-#if (FSR_RCAS_DENOISE == 1)
-	// Noise detection.
-	float nz = float(0.25) * b + float(0.25) * d + float(0.25) * f + float(0.25) * h - e;
-	nz = clamp(abs(nz) * APrxMedRcpF1(AMax3F1(AMax3F1(b, d, e), f, h) - AMin3F1(AMin3F1(b, d, e), f, h)), 0.0, 1.0);
-	nz = float(-0.5) * nz + float(1.0);
-	lobe *= nz;
-#endif
-
-	// Resolve, which needs the medium precision rcp approximation to avoid visible tonality changes.
-	float rcpL = APrxMedRcpF1(float(4.0) * lobe + float(1.0));
-	vec4 pix = vec4(0.0, 0.0, 0.0, 1.0);
-	pix.r = float((lobe * b + lobe * d + lobe * h + lobe * f + e) * rcpL);
-
-	return pix;
-}
