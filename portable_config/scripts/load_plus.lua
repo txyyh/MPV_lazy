@@ -412,7 +412,9 @@ function remove_vfSub()
 	mp.command(vfSub)
 end
 
-
+mp.register_event("file-loaded", function()
+	if mp.get_property("vf") ~= "" then mp.command("vf remove @LUA-load_plus") end
+end)
 
 mp.register_event("start-file", find_and_add_entries)
 
