@@ -8,13 +8,13 @@ Source: igv_faux-HDR
 //!DESC sdr2hdr(fake)
 
 #define saturation                      0.9   // 1.0
-#define gamma                           1.1   // 1.0
+#define gamma                           1.1   // 1.0 // 1.3
 
 #define Soft
 
 #define GammaCorrection(color, gamma)   pow(color, 1.0 / vec3(gamma))
 
-#define BlendOverlay(base, blend)       mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), step(0.5, base))
+//#define BlendOverlay(base, blend)       mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), step(0.5, base))
 
 #define BlendLinearLight(base, blend)   mix(max(base + 2.0 * blend - 1.0, 0.0), min(base + 2.0 * (blend - 0.5), 1.0), step(0.5, blend))
 
@@ -58,3 +58,4 @@ vec4 hook() {
 
     return o;
 }
+
