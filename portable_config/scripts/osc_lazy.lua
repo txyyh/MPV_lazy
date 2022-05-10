@@ -1,6 +1,6 @@
 --[[
 SOURCE_ https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua
-COMMIT_ 20220206 0197729
+COMMIT_ 20220425 bb5b4b1
 SOURCE_ https://github.com/deus0ww/mpv-conf/blob/master/scripts/Thumbnailer_OSC.lua
 COMMIT_ 20220207 8b57a11
 
@@ -60,7 +60,7 @@ local user_opts = {
     seekbarstyle = "bar",               -- bar, diamond or knob
     seekbarhandlesize = 0.6,            -- size ratio of the diamond and knob handle
     seekrangestyle = "inverted",        -- bar, line, slider, inverted or none
-    seekrangeseparate = true,           -- wether the seekranges overlay on the bar-style seekbar
+    seekrangeseparate = true,           -- whether the seekranges overlay on the bar-style seekbar
     seekrangealpha = 200,               -- transparency of seekranges
     seekbarkeyframes = true,            -- use keyframes when dragging the seekbar       -- 现不受全局hr-seek的控制 
     title = "${media-title}",           -- string compatible with property-expansion
@@ -3674,7 +3674,7 @@ function visibility_mode(mode, no_osd)
     end
 
     -- Reset the input state on a mode change. The input state will be
-    -- recalcuated on the next render cycle, except in 'never' mode where it
+    -- recalculated on the next render cycle, except in 'never' mode where it
     -- will just stay disabled.
     mp.disable_key_bindings("input")
     mp.disable_key_bindings("window-controls")
