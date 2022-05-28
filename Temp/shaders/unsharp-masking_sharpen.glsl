@@ -1,3 +1,5 @@
+// only necessary in --vo=gpu-next
+// use --sharp=1 instead via --vo=gpu
 
 //!DESC unsharp-masking_sharpen
 //!HOOK MAIN
