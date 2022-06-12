@@ -1,6 +1,6 @@
 --[[
 SOURCE_ https://github.com/jonniek/mpv-playlistmanager
-COMMIT_ 20210618 1c2c880
+COMMIT_ 20210521 bc139f7
 
 高级播放列表，用于替换内置的过于简洁的列表
 自定义快捷键方案示例，在 input.conf 中另起一行：
@@ -178,7 +178,7 @@ local settings = {
 
 }
 local opts = require("mp.options")
-opts.read_options(settings, "playlistmanager", function(list) update_opts(list) end)
+opts.read_options(settings, nil, function(list) update_opts(list) end)
 
 local utils = require("mp.utils")
 local msg = require("mp.msg")
@@ -662,6 +662,16 @@ function parse_files(res, delimiter)
   end
 end
 
+function get_playlist_filenames_set()
+  local filenames = {}
+  for n=0,plen-1,1 do
+    local filename = mp.get_property('playlist/'..n..'/filename')
+    local _, file = utils.split_path(filename)
+    filenames[file] = true
+  end
+  return filenames
+end
+
 --Creates a playlist of all files in directory, will keep the order and position
 --For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 function playlist(force_dir)
@@ -683,6 +693,7 @@ function playlist(force_dir)
     files, error = get_files_windows(dir)
   end
 
+  local filenames = get_playlist_filenames_set()
   local c, c2 = 0,0
   if files then
     local cur = false
@@ -694,7 +705,9 @@ function playlist(force_dir)
         appendstr = "append-play"
         hasfile = true
       end
-      if cur == true then
+      if filenames[file] then
+        -- continue
+      elseif cur == true then
         mp.commandv("loadfile", utils.join_path(dir, file), appendstr)
         msg.info("Appended to playlist: " .. file)
         c2 = c2 + 1
