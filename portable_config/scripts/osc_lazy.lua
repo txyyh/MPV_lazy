@@ -1,8 +1,8 @@
 --[[
 SOURCE_ https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua
-COMMIT_ 20220425 bb5b4b1
+COMMIT_ 20220604 ec236f7
 SOURCE_ https://github.com/deus0ww/mpv-conf/blob/master/scripts/Thumbnailer_OSC.lua
-COMMIT_ 20220207 8b57a11
+COMMIT_ 20220605 135315f
 
 改进版本的OSC，须禁用原始mpv的内置OSC，且不兼容其它OSC类脚本，实现全部功能需搭配额外两个缩略图引擎脚本（Thumbnailer）。
 示例在 input.conf 中写入：
@@ -37,6 +37,7 @@ local utils   = require 'mp.utils'
 local user_opts = {
     showwindowed = true,                -- show OSC when windowed?
     showfullscreen = true,              -- show OSC when fullscreen?
+    idlescreen = true,                  -- show mpv logo on idle
     scalewindowed = 1,                  -- scaling of the controller when windowed
     scalefullscreen = 1,                -- scaling of the controller when fullscreen
     scaleforcedwindow = 2,              -- scaling when rendered on a forced window
@@ -95,7 +96,7 @@ local user_opts = {
 }
 
 -- read options from config and command-line
-opt.read_options(user_opts, "osc_lazy", function(list) update_options(list) end)
+opt.read_options(user_opts, nil, function(list) update_options(list) end)
 
 
 
@@ -881,8 +882,8 @@ end
 -- return a nice list of tracks of the given type (video, audio, sub)
 function get_tracklist(type)
     local msg = "可用" .. nicetypes[type] .. "轨："
-    if #tracks_osc[type] == 0 then
-        msg = msg .. "none"
+    if not tracks_osc or #tracks_osc[type] == 0 then
+        msg = msg .. "无"
     else
         for n = 1, #tracks_osc[type] do
             local track = tracks_osc[type][n]
@@ -3417,23 +3418,27 @@ function tick()
 
         local ass = assdraw.ass_new()
         -- mpv logo
-        for i, line in ipairs(logo_lines) do
-            ass:new_event()
-            ass:append(line_prefix .. line)
+        if user_opts.idlescreen then
+            for i, line in ipairs(logo_lines) do
+                ass:new_event()
+                ass:append(line_prefix .. line)
+            end
         end
 
         -- Santa hat
-        if is_december and not user_opts.greenandgrumpy then
+        if is_december and user_opts.idlescreen and not user_opts.greenandgrumpy then
             for i, line in ipairs(santa_hat_lines) do
                 ass:new_event()
                 ass:append(line_prefix .. line)
             end
         end
 
-        ass:new_event()
-        ass:pos(320, icon_y+100)
-        ass:an(8)
-        ass:append("拖入文件或网址进行播放")
+        if user_opts.idlescreen then
+            ass:new_event()
+            ass:pos(320, icon_y+100)
+            ass:an(8)
+            ass:append("拖入文件或网址进行播放")
+        end
         set_osd(640, 360, ass.text)
 
         if state.showhide_enabled then
@@ -3684,9 +3689,35 @@ function visibility_mode(mode, no_osd)
     request_tick()
 end
 
+function idlescreen_visibility(mode, no_osd)
+    if mode == "cycle" then
+        if user_opts.idlescreen then
+            mode = "no"
+        else
+            mode = "yes"
+        end
+    end
+
+    if mode == "yes" then
+        user_opts.idlescreen = true
+    else
+        user_opts.idlescreen = false
+    end
+
+    utils.shared_script_property_set("osc-idlescreen", mode)
+
+    if not no_osd and tonumber(mp.get_property("osd-level")) >= 1 then
+        mp.osd_message("OSC logo visibility: " .. tostring(mode))
+    end
+
+    request_tick()
+end
+
 visibility_mode(user_opts.visibility, true)
 mp.register_script_message("osc-visibility", visibility_mode)
 mp.add_key_binding(nil, "visibility", function() visibility_mode("cycle") end)
+
+mp.register_script_message("osc-idlescreen", idlescreen_visibility)
 
 set_virt_mouse_area(0, 0, 0, 0, "input")
 set_virt_mouse_area(0, 0, 0, 0, "window-controls")
