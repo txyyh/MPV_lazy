@@ -10,7 +10,7 @@ denoise_lv = 2.0
 channel = [0]
 blk_frames = 3
 CPU_t = 6
-channel_par = False
+channel_p = False
 # fft3d内核 1=FFT3DFilter // 2=Neo FFT3D
 # 降噪强度
 # 降噪处理的平面
