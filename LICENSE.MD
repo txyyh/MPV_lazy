@@ -46,17 +46,11 @@ _通常协议已集成在文件内部_
 ### Bwdif
 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Bwdif/blob/master/LICENSE
 
-### fmtconv
-https://github.com/EleonoreMizo/fmtconv/blob/master/COPYING
-
 ### Miscellaneous Filters
 https://github.com/vapoursynth/vs-miscfilters-obsolete/blob/master/LICENSE
 
 ### MVTools
 https://github.com/dubhater/vapoursynth-mvtools#license
-
-### Neo f3kdb
-https://github.com/HomeOfAviSynthPlusEvolution/neo_f3kdb/blob/master/LICENSE
 
 ### nnedi3
 https://github.com/dubhater/vapoursynth-nnedi3/blob/master/gpl2.txt
@@ -72,6 +66,9 @@ https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TDeintMod/blob/master/
 
 ### TemporalSoften2
 https://github.com/dubhater/vapoursynth-temporalsoften2/blob/master/LICENSE.LGPLv2.1
+
+### VMAF
+https://github.com/HomeOfVapourSynthEvolution/VapourSynth-VMAF/blob/master/LICENSE
 
 ### Yadifmod
 https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Yadifmod/blob/master/LICENSE
