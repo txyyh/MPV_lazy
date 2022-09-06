@@ -12,16 +12,16 @@ echo 原版MPV窗口打开后拖入任意视频即可
 :: 输出将执行的参数信息
 echo ==========================================================
 echo == 启动参数
-echo mpv --config=no --include=~~exe_dir/mpv-BenchMark.conf --idle=once --force-window=yes
+echo mpv --config=no --include=installer/mpv-BenchMark.conf --idle=once --force-window=yes
 echo ==========================================================
 echo == 以下为日志
 echo ==========================================================
 
 :: 更改当前工作目录
-cd /D %~dp0
+cd /D %~dp0\..
 
 :: 执行启动参数
-mpv.com --config=no --include=~~exe_dir/mpv-BenchMark.conf --idle=once --force-window=yes
+mpv.com --config=no --include=installer/mpv-BenchMark.conf --idle=once --force-window=yes
 
 :: 手动退出后输出的文本
 echo ==========================================================

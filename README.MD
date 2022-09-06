@@ -1,7 +1,7 @@
 # mpv播放器折腾记录
 
 _从萌新到大白，<s>用前嫌麻烦</s> 用后真香_  
-[命令行播放器 mpv](https://github.com/mpv-player/mpv) 的个人设置备份（windows10/11）
+[命令行播放器 mpv](https://github.com/mpv-player/mpv) 的设置历史存档（windows10/11）
 
 前往上方的 [**📖Wiki 维基版块📖**](../../wiki) 查看文档导航和关于子目录中各文件的说明
 
@@ -23,6 +23,6 @@ _从萌新到大白，<s>用前嫌麻烦</s> 用后真香_
 
 ## 预览
 
-![](Temp/IMG/index-新界面与上下文菜单.webp)
-![](Temp/IMG/index-界面对比.jpg)
-![](Temp/IMG/index-高级播放列表.png)
+![](https://github.com/hooke007/mpv-lazy/blob/main/Temp/IMG/index-新界面与上下文菜单.webp)
+![](https://github.com/hooke007/mpv-lazy/blob/main/Temp/IMG/index-界面对比.jpg)
+![](https://github.com/hooke007/mpv-lazy/blob/main/Temp/IMG/index-高级播放列表.png)

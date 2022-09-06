@@ -43,35 +43,4 @@ _通常协议已集成在文件内部_
 
 ## .../mpv-lazy/vapoursynth64/plugins
 
-### Bwdif
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Bwdif/blob/master/LICENSE
-
-### Miscellaneous Filters
-https://github.com/vapoursynth/vs-miscfilters-obsolete/blob/master/LICENSE
-
-### MVTools
-https://github.com/dubhater/vapoursynth-mvtools#license
-
-### nnedi3
-https://github.com/dubhater/vapoursynth-nnedi3/blob/master/gpl2.txt
-
-### NNEDI3CL
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/blob/master/LICENSE
-
-### RIFE
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-RIFE-ncnn-Vulkan/blob/master/LICENSE
-
-### TDeintMod
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TDeintMod/blob/master/LICENSE
-
-### TemporalSoften2
-https://github.com/dubhater/vapoursynth-temporalsoften2/blob/master/LICENSE.LGPLv2.1
-
-### VMAF
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-VMAF/blob/master/LICENSE
-
-### Yadifmod
-https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Yadifmod/blob/master/LICENSE
-
-### znedi3
-https://github.com/sekrit-twc/znedi3/blob/master/gpl2.txt
+参见 [对应维基页面](https://github.com/hooke007/MPV_lazy/wiki/2_%E8%AE%BE%E7%BD%AE%E6%96%87%E4%BB%B6%E5%A4%B9%EF%BC%88%E4%BE%BF%E6%90%BA%E5%BC%8F%EF%BC%89#vs%E8%84%9A%E6%9C%AC%E8%B7%AF%E5%BE%84-)
